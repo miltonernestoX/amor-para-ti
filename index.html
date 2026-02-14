@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Para el amor de mi vida</title>
+
+<style>
+:root{
+  --bg:#f2e9e1;
+  --text:#5d4037;
+  --line: rgba(93,64,55,.28);
+  --trunk:#7a4b2b;
+}
+
+html,body{
+  margin:0; padding:0;
+  width:100%; height:100%;
+  overflow:hidden;
+  background:var(--bg);
+  font-family:"Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color:var(--text);
+}
+
+.container{ position:relative; width:100vw; height:100vh; }
+
+/* Texto */
+.text-content{
+  position:absolute;
+  top:12%;
+  left:10%;
+  max-width:520px;
+  z-index:10;
+}
+.text-content p{
+  margin:12px 0;
+  font-size:1.25rem;
+  line-height:1.55;
+}
+
+/* Timer */
+.timer-box{
+  position:absolute;
+  left:10%;
+  bottom:20%;
+  z-index:10;
+}
+.timer-box p{ margin:0 0 6px 0; font-size:1.05rem; opacity:.9; }
+#timer{ font-size:1.65rem; font-weight:800; white-space:nowrap; }
+
+/* Línea base */
+.base-line{
+  position:absolute;
+  left:0; right:0;
+  bottom:18%;
+  height:2px;
+  background:var(--line);
+  z-index:1;
+}
+
+/* Árbol */
+.tree-wrap{
+  position:absolute;
+  right:10%;
+  bottom:18%;
+  width:520px;
+  height:620px;
+  z-index:2;
+  pointer-events:none;
+}
+
+/* SVG atrás */
+.tree-svg{
+  position:absolute;
+  inset:0;
+  z-index:0; /* ✅ más atrás */
+}
+
+/* Corazones del árbol arriba */
+.hearts-layer{
+  position:absolute;
+  inset:0;
+  z-index:2; /* ✅ siempre encima del café */
+}
+
+/* Lluvia global */
+.rain-layer{
+  position:absolute;
+  inset:0;
+  z-index:9;
+  pointer-events:none;
+}
+
+/* Animación crecer árbol */
+.grow{
+  transform-origin:50% 100%;
+  transform:scaleY(0);
+  animation:growUp 1s ease forwards;
+}
+@keyframes growUp{ to{ transform:scaleY(1); } }
+
+/* ===== Corazón (hojas) ===== */
+.leaf-heart{
+  position:absolute;
+  transform:rotate(-45deg);
+  opacity:0;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,.06));
+  animation:popIn .65s ease forwards;
+}
+.leaf-heart::before,
+.leaf-heart::after{
+  content:"";
+  position:absolute;
+  width:100%;
+  height:100%;
+  background:inherit;
+  border-radius:50%;
+}
+.leaf-heart::before{ top:-50%; left:0; }
+.leaf-heart::after{ top:0; left:50%; }
+
+@keyframes popIn{
+  0%   { opacity:0; transform:rotate(-45deg) scale(.15); }
+  70%  { opacity:.95; transform:rotate(-45deg) scale(1.08); }
+  100% { opacity:.92; transform:rotate(-45deg) scale(.98); }
+}
+
+/* ===== Corazones que VAN AL CONTADOR ===== */
+.to-counter{
+  position:absolute;
+  width:12px; height:12px;
+  transform: rotate(-45deg);
+  opacity:.95;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,.06));
+  will-change: transform, opacity;
+  animation: toCounter 2.8s ease-in forwards;
+}
+.to-counter::before,
+.to-counter::after{
+  content:"";
+  position:absolute;
+  width:12px; height:12px;
+  background:inherit;
+  border-radius:50%;
+}
+.to-counter::before{ top:-6px; left:0; }
+.to-counter::after{ top:0; left:6px; }
+
+@keyframes toCounter{
+  0%   { transform: translate(0,0) rotate(-45deg) scale(1); opacity:.95; }
+  15%  { transform: translate(calc(var(--dx)*0.15), calc(var(--dy)*0.05)) rotate(-45deg) scale(1); opacity:.95; }
+  70%  { transform: translate(calc(var(--dx)*0.80), calc(var(--dy)*0.85)) rotate(-45deg) scale(1); opacity:.90; }
+  100% { transform: translate(var(--dx), var(--dy)) rotate(-45deg) scale(1); opacity:0; }
+}
+
+/* ===== Lluvia AMBIENTAL ===== */
+.rain-heart{
+  position:absolute;
+  width:12px; height:12px;
+  transform: rotate(-45deg);
+  opacity:.75;
+  animation: rainFall 6.5s linear forwards;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,.05));
+}
+.rain-heart::before,
+.rain-heart::after{
+  content:"";
+  position:absolute;
+  width:12px; height:12px;
+  background:inherit;
+  border-radius:50%;
+}
+.rain-heart::before{ top:-6px; left:0; }
+.rain-heart::after{ top:0; left:6px; }
+
+@keyframes rainFall{
+  0%   { transform: translate(0,0) rotate(-45deg); opacity:0; }
+  10%  { opacity:.75; }
+  100% { transform: translate(calc(var(--rx)), calc(var(--ry))) rotate(-45deg); opacity:0; }
+}
+
+@media (max-width: 900px){
+  .tree-wrap{ right:0; transform:scale(.85); transform-origin:right bottom; }
+  .text-content{ left:6%; right:6%; max-width:none; }
+  .timer-box{ left:6%; }
+  #timer{ font-size:1.3rem; }
+}
+</style>
+</head>
+
+<body>
+<div class="container" id="container">
+
+  <div class="rain-layer" id="rainLayer"></div>
+
+  <div class="text-content">
+    <p>Para el amor de mi vida:</p>
+    <p>Si pudiera elegir un lugar seguro, sería a tu lado.</p>
+    <p>Cuanto más tiempo estoy contigo más te amo.</p>
+    <p><b>— I Love You!</b></p>
+  </div>
+
+  <div class="timer-box" id="timerBox">
+    <p>Mi amor por ti comenzó hace...</p>
+    <div id="timer">Calculando...</div>
+  </div>
+
+  <div class="tree-wrap" id="treeWrap">
+    <!-- ✅ TRONCO RECORTADO: termina antes de la copa para NO atravesar -->
+    <svg class="tree-svg" viewBox="0 0 520 620" aria-hidden="true">
+      <g class="grow">
+        <!-- Tronco (solo hasta abajo de la copa) -->
+        <path d="
+          M247 610
+          C242 540, 244 470, 247 410
+          C250 360, 252 330, 252 315
+          C252 300, 250 285, 248 270
+          C246 250, 246 240, 248 232
+          L272 232
+          C274 240, 274 250, 272 270
+          C270 285, 268 300, 268 315
+          C268 330, 270 360, 273 410
+          C276 470, 278 540, 273 610
+          Z"
+          fill="var(--trunk)"
+          opacity="0.98"
+        />
+
+        <!-- Base -->
+        <path d="
+          M240 610
+          C248 600, 258 595, 260 595
+          C262 595, 272 600, 280 610
+          Z"
+          fill="var(--trunk)"
+          opacity="0.98"
+        />
+      </g>
+    </svg>
+
+    <!-- Corazones del árbol + los que van al contador -->
+    <div class="hearts-layer" id="heartsLayer"></div>
+  </div>
+
+  <div class="base-line" id="baseLine"></div>
+</div>
+
+<script>
+/* ===== Timer ===== */
+const startDate = new Date(2022, 5, 19, 0, 0, 0);
+const pad2 = n => String(n).padStart(2,"0");
+
+function updateTimer(){
+  const now = new Date();
+  const diff = now - startDate;
+
+  const d = Math.floor(diff/(1000*60*60*24));
+  const h = Math.floor((diff/(1000*60*60))%24);
+  const m = Math.floor((diff/(1000*60))%60);
+  const s = Math.floor((diff/1000)%60);
+
+  document.getElementById("timer").innerText =
+    `${d} días ${h} horas ${pad2(m)} minutos ${pad2(s)} segundos`;
+}
+setInterval(updateTimer,1000);
+updateTimer();
+
+/* ===== Setup ===== */
+const layer     = document.getElementById("heartsLayer");
+const rainLayer = document.getElementById("rainLayer");
+const baseLine  = document.getElementById("baseLine");
+
+const colors = [
+  "#b00020", "#d50000", "#ff1744", "#ff5252",
+  "#e91e63", "#d81b60", "#ad1457",
+  "#f48fb1", "#ff80ab"
+];
+
+/* ✅ Centro copa */
+const CX = 260;
+const CY = 235;  // un poco más arriba para que se vea “grande” como tu imagen
+
+function heartPoint(t){
+  return {
+    x:16*Math.pow(Math.sin(t),3),
+    y:13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t)
+  };
+}
+
+/* Hoja (corazón) */
+function addLeaf(x,y,size,color,delay){
+  setTimeout(() => {
+    const el = document.createElement("div");
+    el.className = "leaf-heart";
+    el.style.background = color;
+    el.style.width = size + "px";
+    el.style.height = size + "px";
+    el.style.left = x + "px";
+    el.style.top  = y + "px";
+    layer.appendChild(el);
+  }, delay);
+}
+
+/* ✅ COPA MÁS DENSA Y COMPACTA (como tu screenshot) */
+function fillHeartSuperDense(){
+  const total = 1100;     // ✅ MUCHOS corazones
+  const scale = 10.6;     // ✅ más grande
+  const insideBias = 1.05; // ✅ rellena más uniforme (menos huecos)
+
+  for(let i=0;i<total;i++){
+    const t = Math.random()*Math.PI*2;
+    const p = heartPoint(t);
+    const r = Math.pow(Math.random(), insideBias);
+
+    // Menos jitter para que quede “compacto”
+    const x = CX + p.x*scale*r + (Math.random()*6 - 3);
+    const y = CY - p.y*scale*r + (Math.random()*6 - 3);
+
+    // Un poquito más grandes para tapar café
+    const size = 10 + Math.random()*10; // 10-20
+    const color = colors[(Math.random()*colors.length)|0];
+
+    addLeaf(x,y,size,color, i * 5); // ✅ aparece rápido pero animado
+  }
+}
+
+/* ===== Lluvia GLOBAL ===== */
+function spawnRain(){
+  const el = document.createElement("div");
+  el.className = "rain-heart";
+  el.style.background = colors[(Math.random()*colors.length)|0];
+
+  const x = Math.random() * window.innerWidth;
+  const y = -20 - Math.random() * 120;
+  el.style.left = x + "px";
+  el.style.top  = y + "px";
+
+  const rx = (Math.random()*180 - 90) + "px";
+  const ry = (window.innerHeight + 160) + "px";
+  el.style.setProperty("--rx", rx);
+  el.style.setProperty("--ry", ry);
+  el.style.animationDuration = (4.8 + Math.random()*3.2) + "s";
+
+  rainLayer.appendChild(el);
+  el.addEventListener("animationend", () => el.remove());
+}
+
+/* ===== Destino al contador ===== */
+function getCounterTargetInLayer(){
+  const timerRect = document.getElementById("timer").getBoundingClientRect();
+  const layerRect = layer.getBoundingClientRect();
+
+  const tx = (timerRect.left + timerRect.width * 0.50) - layerRect.left;
+  const ty = (timerRect.top  + timerRect.height * 0.60) - layerRect.top;
+
+  const baseRect = baseLine.getBoundingClientRect();
+  const baseY = baseRect.top - layerRect.top;
+
+  return { tx, ty: Math.min(ty, baseY - 6) };
+}
+
+/* Corazones que se despegan y van al contador */
+function spawnToCounter(){
+  const el = document.createElement("div");
+  el.className = "to-counter";
+  el.style.background = colors[(Math.random()*colors.length)|0];
+
+  const startX = CX + (Math.random()*220 - 110);
+  const startY = CY + (Math.random()*140 - 70);
+  el.style.left = startX + "px";
+  el.style.top  = startY + "px";
+
+  const { tx, ty } = getCounterTargetInLayer();
+  const dx = (tx - startX) + (Math.random()*40 - 20);
+  const dy = (ty - startY) + (Math.random()*14 - 7);
+
+  el.style.setProperty("--dx", dx + "px");
+  el.style.setProperty("--dy", dy + "px");
+  el.style.animationDuration = (2.2 + Math.random()*1.4) + "s";
+
+  layer.appendChild(el);
+  el.addEventListener("animationend", () => el.remove());
+}
+
+/* ===== Arranque ===== */
+setTimeout(() => {
+  fillHeartSuperDense();
+
+  // lluvia constante (como screenshot)
+  setInterval(() => {
+    const n = 2 + ((Math.random()*4)|0);
+    for(let i=0;i<n;i++) spawnRain();
+  }, 320);
+
+  // corazones que se van al contador
+  setInterval(() => {
+    const n = 1 + ((Math.random()*3)|0);
+    for(let i=0;i<n;i++) spawnToCounter();
+  }, 520);
+
+}, 800);
+</script>
+</body>
+</html>
